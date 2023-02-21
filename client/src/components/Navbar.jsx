@@ -15,7 +15,8 @@ const navbarStyle = {
 }
 const typoStyle = {
     color:'black',
-    fontWeight:'bold'
+    fontWeight:'bold',
+
 }
 const Navbar = () => {
   return (
@@ -27,7 +28,6 @@ const Navbar = () => {
                      Product Inventory
                 </Typography>
                 <Button color="inherit"><Link to='/' style={navButton}>Product Type</Link></Button>
-                <Button color="inherit"><Link to='itempage' style={navButton}>Items</Link></Button>
             </Toolbar>
       </AppBar>
     </Box>
