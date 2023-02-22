@@ -10,6 +10,7 @@ import { Button, TextField } from '@mui/material';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Modal from '@mui/material/Modal';
+import Checkbox from '@mui/material/Checkbox';
 
 const modalStyle = {
   position: 'absolute',
@@ -104,6 +105,7 @@ const ItemsPage = () => {
         <TableCell style={tableCellOne} align="center">Id</TableCell>
         <TableCell style={tableCellOne} align="center">Serial Number</TableCell>
         <TableCell style={tableCellOne} align="center">Tools</TableCell>
+        <TableCell style={tableCellOne} align="center">Sold</TableCell>
       </TableRow>
     </TableHead>
     <TableBody>
@@ -112,13 +114,16 @@ const ItemsPage = () => {
           key={item.id}
           sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
         >
-          <TableCell style={tableRowStyle}  align="center" > {item.name} </TableCell>
-          <TableCell style={tableRowStyle}  align="center">{item.id}</TableCell>
-          <TableCell style={tableRowStyle}  align="center">{item.serialNumber}</TableCell>
+          <TableCell  align="center" > {item.name} </TableCell>
+          <TableCell  align="center">{item.id}</TableCell>
+          <TableCell  align="center">{item.serialNumber}</TableCell>
           <TableCell  align="center">
             <Button onClick={handleOpen2} variant='contained' style={btnStyle} color='success'>Edit</Button>
             <Button variant='contained' color='error'>Delete</Button>
-            </TableCell>
+          </TableCell>
+          <TableCell style={tableRowStyle}  align="center">
+            <Checkbox color='success'/>
+          </TableCell>
         </TableRow>
       ))}
     </TableBody>
