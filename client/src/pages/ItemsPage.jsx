@@ -95,18 +95,11 @@ const ItemsPage = () => {
      item.serial_number.toString().includes(searchText)     
   )
 
-  // const [searchedData , setSearchedData] = useState([]);
-
-  // const handleSearch = (e) => {
-  //     const value = e.target.value;
-  //     const Searched = itemsData.filter(item => item.serial_number.toString().includes(value))
-  //     setSearchedData(Searched)
-  // }
+  
 
   useEffect(() => {
     getItems(productId).then((result) => {
       setItemsData(result.data)
-      // setSearchedData(result.data)
     }).catch((err) => {
       console.log(err)
     })
