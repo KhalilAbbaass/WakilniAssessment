@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -10,7 +10,12 @@ import { Button, TextField } from '@mui/material';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Modal from '@mui/material/Modal';
-import Checkbox from '@mui/material/Checkbox';
+import { useLocation } from 'react-router-dom';
+import { getItems } from '../services/getItems';
+import { addItem } from '../services/addItem';
+import { deleteitem } from '../services/deleteItem';
+import { updateItem } from '../services/updateItem';
+import { soldItems } from '../services/soldItems';
 
 const modalStyle = {
   position: 'absolute',
@@ -76,25 +81,108 @@ const ItemsPage = () => {
   const handleOpen2 = () => setOpen2(true);
   const handleClose2 = () => setOpen2(false);
 
+  const location = useLocation();
+  const productId = location.pathname.split('/')[2]
 
-  const productTypeData = [
-      {
-        id: 1,
-        name: "truckLego",
-        serialNumber: '555',
-      },
-      {
-        id: 2,
-        name: "carLego",
-        serialNumber: '666',
-      },
-    ];
+  const [itemsData, setItemsData] = useState([])
+
+  const [searchText , setSearchText] = useState('')
+
+  const handleSearch = (e) => {
+      setSearchText(e.target.value)
+  }
+  const searchedData = itemsData.filter(item =>
+     item.serial_number.toString().includes(searchText)     
+  )
+
+  // const [searchedData , setSearchedData] = useState([]);
+
+  // const handleSearch = (e) => {
+  //     const value = e.target.value;
+  //     const Searched = itemsData.filter(item => item.serial_number.toString().includes(value))
+  //     setSearchedData(Searched)
+  // }
+
+  useEffect(() => {
+    getItems(productId).then((result) => {
+      setItemsData(result.data)
+      // setSearchedData(result.data)
+    }).catch((err) => {
+      console.log(err)
+    })
+  },[itemsData , productId])
+
+  const [itemInfo , setItemInfo] = useState({
+    name:"",
+    serial_number:""
+  })
+
+  
+
+  const handleAddItem = (e) => {
+    e.preventDefault();
+    addItem(productId , itemInfo).then((result) => {
+      console.log(result)
+    }).catch((err) => {
+      console.log(err)
+    })
+  }
+
+  const handleDeleteItem = (id) => {
+    deleteitem(id).then((result) => {
+      console.log(result.data)
+    }).catch((err) => {
+        console.log(err)
+    })
+
+  }
+  const [editModal , setEditModal] = useState({
+    id:"",
+    name:"",
+    serial_number:""
+})
+
+
+  // const productTypeData = [
+  //     {
+  //       id: 1,
+  //       name: "truckLego",
+  //       serialNumber: '555',
+  //     },
+  //     {
+  //       id: 2,
+  //       name: "carLego",
+  //       serialNumber: '666',
+  //     },
+  //   ];
+
+    const handleSold = (id) => {
+      soldItems(id).then((result) => {
+        console.log(result.data)
+      }).catch((err) => {
+          console.log(err)
+      })
+    }
+
+    const [editItem , setEditItem] = useState({
+      name:"",
+      serial_number:""
+  })
+
+  const handleEditItem = (id) => {
+    updateItem(editItem , id).then((result) => {
+      console.log(result.data)
+    }).catch((err) => {
+        console.log(err)
+    })
+  }
+
 
   return (
     <div style={productTypeContainer}>
     <h1>Item Type Page</h1>
     <div style={searchDiv}>
-        <TextField style={textfieldStyle} id="outlined-basic" label="Search by serial number" variant="outlined" />
+        <TextField onChange={handleSearch} style={textfieldStyle} id="outlined-basic" label="Search by serial number" variant="outlined" />
         <Button style={addBtnStyle} variant='contained'  onClick={handleOpen}>Add</Button>
     </div>
 <TableContainer style={productTypeTableStyle} component={Paper}>
@@ -109,20 +197,22 @@ const ItemsPage = () => {
       </TableRow>
     </TableHead>
     <TableBody>
-      {productTypeData.map((item) => (
+      {searchedData.map((item) => (
         <TableRow 
           key={item.id}
           sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
         >
           <TableCell  align="center" > {item.name} </TableCell>
           <TableCell  align="center">{item.id}</TableCell>
-          <TableCell  align="center">{item.serialNumber}</TableCell>
+          <TableCell  align="center">{item.serial_number}</TableCell>
           <TableCell  align="center">
-            <Button onClick={handleOpen2} variant='contained' style={btnStyle} color='success'>Edit</Button>
-            <Button variant='contained' color='error'>Delete</Button>
+            <Button  variant='contained' style={btnStyle} color='success' onClick={() => {
+                    handleOpen2() 
+                    setEditModal(item)}}>Edit</Button>
+            <Button onClick={() => handleDeleteItem(item.id)} variant='contained' color='error'>Delete</Button>
           </TableCell>
           <TableCell style={tableRowStyle}  align="center">
-            <Checkbox color='success'/>
+            <input type='checkbox' checked={item.sold} onChange={() => handleSold(item.id)}></input>
           </TableCell>
         </TableRow>
       ))}
@@ -142,9 +232,15 @@ const ItemsPage = () => {
       <Typography id="modal-modal-title" variant="h6" component="h2">
         Add Item
       </Typography>
-      <TextField id="outlined-basic" label="Item Name" variant="outlined" />
-      <TextField id="outlined-basic" label="Serial Number" variant="outlined" />
-      <Button variant='contained' style={{backgroundColor:'black'}}>Add Item</Button>
+      <TextField  onChange={(e) => {
+            setItemInfo({...itemInfo , name: e.target.value})
+          }} 
+             id="outlined-basic" label="Item Name" variant="outlined" />
+      <TextField  onChange={(e) => {
+            setItemInfo({...itemInfo , serial_number: e.target.value})
+          }} 
+             id="outlined-basic" label="Serial Number" variant="outlined" />
+      <Button onClick={handleAddItem} variant='contained' style={{backgroundColor:'black'}}>Add Item</Button>
     </Box>
   </Modal>
 </div>
@@ -158,11 +254,17 @@ const ItemsPage = () => {
   >
     <Box sx={modalStyle}>
       <Typography id="modal-modal-title" variant="h6" component="h2">
-        Edit
+        Edit {editModal.name}
       </Typography>
-      <TextField id="outlined-basic" label=" Edit item" variant="outlined" />
-      <TextField id="outlined-basic" label=" Edit Serial Number" variant="outlined" />
-      <Button variant='contained' style={{backgroundColor:'black'}}>Edit Changes</Button>
+      <TextField onChange={(e) => {
+            setEditItem({...editItem , name: e.target.value})
+          }}
+           id="outlined-basic" label=" Edit item" variant="outlined" />
+      <TextField onChange={(e) => {
+            setEditItem({...editItem , serial_number: e.target.value})
+          }}
+           id="outlined-basic" label=" Edit Serial Number" variant="outlined" />
+      <Button onClick={() => {handleEditItem(editModal.id)}}  variant='contained' style={{backgroundColor:'black'}}>Edit Changes</Button>
     </Box>
   </Modal>
 </div>

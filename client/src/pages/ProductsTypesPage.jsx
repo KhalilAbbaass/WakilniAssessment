@@ -93,24 +93,22 @@ const ProductsTypesPage = () => {
     const nav = useNavigate();
 
     const [productTypeData , setProductTypeDate] = useState([]);
-    const [search , setSearch] = useState('');
-    const [searchedData , setSearchedData] = useState([]);
+    const [searchText , setSearchText] = useState('')
 
     const handleSearch = (e) => {
-        const value = e.target.value.toLowerCase();
-        setSearch(value)
-        const Searched = productTypeData.filter(item => item.product_type_name.toLowerCase().includes(value))
-        setSearchedData(Searched)
+        setSearchText(e.target.value)
     }
+    const searchedData = productTypeData.filter(item =>
+       item.product_type_name.toLowerCase().includes(searchText.toLowerCase())     
+    )
 
     useEffect(() => {
         getProducts().then((result) => {
             setProductTypeDate(result.data)
-            setSearchedData(result.data)
         }).catch((err) => {
             console.log(err)
         })
-    },[])
+    },[productTypeData])
 
     const [productInfo , setProductInfo] = useState({
         product_type_name:"",
@@ -167,7 +165,7 @@ const ProductsTypesPage = () => {
 
     const handleDeleteProduct = (id) => {
         deleteProducts(id).then((result) => {
-
+        console.log(result.data)
         }).catch((err) => {
             console.log(err)
         })
