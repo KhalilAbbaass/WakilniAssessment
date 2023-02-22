@@ -173,7 +173,7 @@ const ItemsPage = () => {
 
   return (
     <div style={productTypeContainer}>
-    <h1>Item Type Page</h1>
+    <h1>Item Page</h1>
     <div style={searchDiv}>
         <TextField onChange={handleSearch} style={textfieldStyle} id="outlined-basic" label="Search by serial number" variant="outlined" />
         <Button style={addBtnStyle} variant='contained'  onClick={handleOpen}>Add</Button>
