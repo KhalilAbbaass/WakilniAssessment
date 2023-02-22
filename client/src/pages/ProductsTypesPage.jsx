@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -11,6 +11,12 @@ import { useNavigate } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Modal from '@mui/material/Modal';
+import { getProducts } from '../services/getProducts';
+import { addProduct } from '../services/addProduct';
+import { deleteProducts } from '../services/deleteProducts';
+import { editProducts } from '../services/editProducts';
+
+
 
 const modalStyle = {
     position: 'absolute',
@@ -86,31 +92,92 @@ const ProductsTypesPage = () => {
 
     const nav = useNavigate();
 
-    const productTypeData = [
-        {
-          id: 1,
-          productType: "Lego",
-          count: '10',
-          img: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/LEGO_logo.svg/800px-LEGO_logo.svg.png",
-        },
-        {
-          id: 2,
-          productType: "Video games",
-          count: '3',
-          img: "https://hips.hearstapps.com/hmg-prod/images/most-popular-video-games-of-2022-1642612227.png",
-        },
-      ];
+    const [productTypeData , setProductTypeDate] = useState([]);
+    const [search , setSearch] = useState('');
+    const [searchedData , setSearchedData] = useState([]);
+
+    const handleSearch = (e) => {
+        const value = e.target.value.toLowerCase();
+        setSearch(value)
+        const Searched = productTypeData.filter(item => item.product_type_name.toLowerCase().includes(value))
+        setSearchedData(Searched)
+    }
+
+    useEffect(() => {
+        getProducts().then((result) => {
+            setProductTypeDate(result.data)
+            setSearchedData(result.data)
+        }).catch((err) => {
+            console.log(err)
+        })
+    },[])
+
+    const [productInfo , setProductInfo] = useState({
+        product_type_name:"",
+        image:""
+    })
+
+    const [editProductType , setEditProductType] = useState({
+        product_type_name:"",
+        image:""
+    })
+    const [editModal , setEditModal] = useState({
+        id:"",
+        product_type_name:"",
+        image:""
+    })
+
+    const handleEditProductType = (id) => {
+        editProducts(editProductType , id).then((result) => {
+            console.log(result)
+        }).catch((err) => {
+            console.log(err)
+        })
+    }
+    
+
+    // const productTypeData = [
+    //     {
+    //       id: 1,
+    //       productType: "Lego",
+    //       count: '10',
+    //       img: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/LEGO_logo.svg/800px-LEGO_logo.svg.png",
+    //     },
+    //     {
+    //       id: 2,
+    //       productType: "Video games",
+    //       count: '3',
+    //       img: "https://hips.hearstapps.com/hmg-prod/images/most-popular-video-games-of-2022-1642612227.png",
+    //     },
+    //   ];
 
     const handleRowClick = (id) => {
         nav(`/itempage/${id}`)
 
     }
 
+    const handleAddProductType = (e) => {
+        e.preventDefault();
+        addProduct(productInfo).then((result) => {
+            console.log(result.data)
+        }).catch((err) => {
+            console.log(err)
+        })
+    }
+
+    const handleDeleteProduct = (id) => {
+        deleteProducts(id).then((result) => {
+
+        }).catch((err) => {
+            console.log(err)
+        })
+    }
+
   return (
     <div style={productTypeContainer}>
         <h1>Product Types Page</h1>
         <div style={searchDiv}>
-            <TextField style={textfieldStyle} id="outlined-basic" label="Search by product name" variant="outlined" />
+            <TextField  onChange={handleSearch} style={textfieldStyle} id="outlined-basic" label="Search by product name" variant="outlined" />
             <Button style={addBtnStyle} variant='contained'  onClick={handleOpen}>Add</Button>
         </div>
     <TableContainer style={productTypeTableStyle} component={Paper}>
@@ -125,19 +192,21 @@ const ProductsTypesPage = () => {
           </TableRow>
         </TableHead>
         <TableBody>
-          {productTypeData.map((item) => (
+          {searchedData.map((item) => (
             <TableRow 
               key={item.id}
               sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
             >
-              <TableCell style={tableRowStyle} onClick = {() =>handleRowClick(item.id)} align="center" > {item.productType} </TableCell>
+              <TableCell style={tableRowStyle} onClick = {() =>handleRowClick(item.id)} align="center" > {item.product_type_name} </TableCell>
               <TableCell style={tableRowStyle} onClick = {() =>handleRowClick(item.id)} align="center">{item.id}</TableCell>
               <TableCell style={tableRowStyle} onClick = {() =>handleRowClick(item.id)} align="center">{item.count}</TableCell>
               <TableCell  align="center">
-                <Button onClick={handleOpen2} variant='contained' style={btnStyle} color='success'>Edit</Button>
-                <Button variant='contained' color='error'>Delete</Button>
+                <Button onClick={() => {
+                    handleOpen2() 
+                    setEditModal(item)}}variant='contained' style={btnStyle} color='success'>Edit</Button>
+                <Button onClick={() => handleDeleteProduct(item.id)} variant='contained' color='error'>Delete</Button>
                 </TableCell>
-              <TableCell style={tableRowStyle} onClick = {() =>handleRowClick(item.id)} align="center"><img style={imgStyle} alt='' src={item.img}/></TableCell>
+              <TableCell style={tableRowStyle} onClick = {() =>handleRowClick(item.id)} align="center"><img style={imgStyle} alt='' src={item.image}/></TableCell>
             </TableRow>
           ))}
         </TableBody>
@@ -156,9 +225,15 @@ const ProductsTypesPage = () => {
           <Typography id="modal-modal-title" variant="h6" component="h2">
             Add Product Type 
           </Typography>
-          <TextField id="outlined-basic" label="Product Type" variant="outlined" />
-          <TextField id="outlined-basic" label="Image link Address" variant="outlined" />
-          <Button variant='contained' style={{backgroundColor:'black'}}>Add Product Type Name</Button>
+          <TextField  onChange={(e) => {
+            setProductInfo({...productInfo , product_type_name: e.target.value})
+          }} 
+            id="outlined-basic" label="Product Type" variant="outlined" />
+          <TextField onChange={(e) => {
+            setProductInfo({...productInfo , image: e.target.value})
+          }} 
+            id="outlined-basic" label="Image link Address" variant="outlined" />
+          <Button onClick={handleAddProductType} variant='contained' style={{backgroundColor:'black'}}>Add Product Type Name</Button>
         </Box>
       </Modal>
     </div>
@@ -172,11 +247,17 @@ const ProductsTypesPage = () => {
       >
         <Box sx={modalStyle}>
           <Typography id="modal-modal-title" variant="h6" component="h2">
-            Edit 
+            Edit {editModal.product_type_name}
           </Typography>
-          <TextField id="outlined-basic" label=" Edit Product Type" variant="outlined" />
-          <TextField id="outlined-basic" label=" Edit Image link Address" variant="outlined" />
-          <Button variant='contained' style={{backgroundColor:'black'}}>Edit Changes</Button>
+          <TextField onChange={(e) => {
+            setEditProductType({...editProductType , product_type_name: e.target.value})
+          }} 
+             id="outlined-basic" label=" Edit Product Type" variant="outlined" />
+          <TextField onChange={(e) => {
+            setEditProductType({...editProductType , image: e.target.value})
+          }} 
+             id="outlined-basic" label=" Edit Image link Address" variant="outlined" />
+          <Button onClick={() => {handleEditProductType(editModal.id)}}  variant='contained' style={{backgroundColor:'black'}}>Edit Changes</Button>
         </Box>
       </Modal>
     </div>
